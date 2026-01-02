@@ -25,7 +25,7 @@ export default function EstimatePage() {
   // Areal = veggareal/fasadeflate (ikke gulvareal)
   const [areaM2, setAreaM2] = useState<number>(80);
 
-  // Ekstra felt for utvendig (valgfritt) – vi beholder det, men label blir tydelig
+  // Ekstra felt for utvendig (valgfritt) – brukes for stillasberegning
   const [wallAreaM2, setWallAreaM2] = useState<number>(80);
 
   const [condition, setCondition] = useState<Condition>("normal");
@@ -57,7 +57,9 @@ export default function EstimatePage() {
   // Hold operation i sync med jobType (enkelt MVP)
   useEffect(() => {
     if (jobType === "exterior") setOperation("paint_exterior");
-    if (jobType === "interior" && operation === "paint_exterior") setOperation("paint_interior");
+    if (jobType === "interior" && operation === "paint_exterior") {
+      setOperation("paint_interior");
+    }
   }, [jobType, operation]);
 
   // Nullstill listefritt når det ikke er relevant
@@ -188,20 +190,26 @@ export default function EstimatePage() {
           </div>
         </label>
 
+        {/* ✅ Her er dropdown uten priser i parentes (kun navn) */}
         <label>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>Arbeid</div>
+          <div style={{ fontWeight: 600, marginBottom: 6 }}>Type arbeid</div>
+
           {jobType === "interior" ? (
-            <select value={operation} onChange={(e) => setOperation(e.target.value as Operation)} style={selectStyle}>
-              <option value="paint_interior">Innvendig maling (150 kr/m²)</option>
-              <option value="spackle_only">Sparkling (240 kr/m²)</option>
-              <option value="spackle_and_paint">Sparkling + maling (290 kr/m²)</option>
-              <option value="full_spackle">Helsparkling (548 kr/m²)</option>
+            <select value={operation} onChange={(e) => setOperation(e.target.value as any)} style={selectStyle}>
+              <option value="paint_interior">Innvendig maling</option>
+              <option value="spackle_only">Sparkling</option>
+              <option value="spackle_and_paint">Sparkling + maling</option>
+              <option value="full_spackle">Helsparkling</option>
             </select>
           ) : (
-            <select value={operation} onChange={(e) => setOperation(e.target.value as Operation)} style={selectStyle}>
-              <option value="paint_exterior">Utvendig maling (350 kr/m²)</option>
+            <select value={operation} onChange={(e) => setOperation(e.target.value as any)} style={selectStyle}>
+              <option value="paint_exterior">Utvendig maling</option>
             </select>
           )}
+
+          <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>
+            Pris beregnes automatisk basert på valgt arbeid og areal.
+          </div>
         </label>
 
         <label>
@@ -275,7 +283,7 @@ export default function EstimatePage() {
           <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <input type="checkbox" checked={needsScaffold} onChange={(e) => setNeedsScaffold(e.target.checked)} />
             <span>
-              <b>Trenger stillas</b> (85 kr/m² vegg per uke)
+              <b>Trenger stillas</b> (beregnes automatisk)
             </span>
           </label>
         )}
@@ -293,10 +301,12 @@ export default function EstimatePage() {
 
           <div style={{ marginTop: 10 }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Beregning</div>
+
+            {/* ✅ HER er endringen du ønsket: kun antall, ingen pris */}
             <ul style={{ margin: 0, paddingLeft: 18 }}>
               {result.items.map((it: LineItem) => (
                 <li key={it.code + it.name}>
-                  {it.name}: {Math.round(it.qty)} {it.unit} × {formatNok(it.unitPriceNok)} = {formatNok(it.subtotalNok)}
+                  {it.name}: {Math.round(it.qty)} {it.unit}
                 </li>
               ))}
             </ul>
@@ -389,5 +399,4 @@ const primaryCta: React.CSSProperties = {
   color: "white",
   fontWeight: 800,
 };
-
 
