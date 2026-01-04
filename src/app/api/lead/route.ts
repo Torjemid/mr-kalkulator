@@ -136,7 +136,7 @@ export async function POST(req: Request) {
 
         await resend.emails.send({
           // For testing kan denne brukes:
-          from: "Midtsæter Risnes <onboarding@resend.dev>",
+          from: "Midtsæter Risnes AS <no-reply@midtsaeter-risnes.no>",
           to: [TO_EMAIL],
           subject,
           html,
