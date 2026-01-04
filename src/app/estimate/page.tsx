@@ -172,9 +172,9 @@ export default function EstimatePage() {
         fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
       }}
     >
-      <h1 style={{ fontSize: 22, marginBottom: 6 }}>Få ca. pris</h1>
+      <h1 style={{ fontSize: 22, marginBottom: 6 }}>Priskalkulator</h1>
       <p style={{ marginTop: 0, opacity: 0.8 }}>
-        Svar på noen få spørsmål, så får du et prisintervall. Befaring gir fastpris.
+        Svar på noen få spørsmål, så får du et prisintervall. Bestill befaring for fastpris.
       </p>
 
       <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
@@ -220,13 +220,13 @@ export default function EstimatePage() {
 
           <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
             <button type="button" onClick={() => setAreaM2(80)} style={chipStyle}>
-              Liten (80)
+              Liten (80 m2 veggareal)
             </button>
             <button type="button" onClick={() => setAreaM2(140)} style={chipStyle}>
-              Medium (140)
+              Medium (140 m2 veggareal)
             </button>
             <button type="button" onClick={() => setAreaM2(220)} style={chipStyle}>
-              Stor (220)
+              Stor (220 m2 veggareal)
             </button>
           </div>
         </label>
