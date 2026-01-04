@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { calculateEstimate, type EstimateInput } from "@/lib/pricing";
-import { Resend } from "resend";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // kun server
-);
+// Create Supabase client lazily inside the request handler so missing
+// environment variables don't break build-time module evaluation.
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Instantiate `Resend` lazily below when actually sending mail so
+// we don't require the API key at module-evaluation / build time.
 
 // ✅ SETT DENNE:
 const TO_EMAIL = "torje12@gmail.com";
@@ -25,6 +23,13 @@ function escapeHtml(value: any) {
 
 export async function POST(req: Request) {
   try {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in environment");
+    }
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
     const body = await req.json();
     const input: EstimateInput = body.input;
     const customer = body.customer ?? {};
@@ -134,13 +139,28 @@ export async function POST(req: Request) {
           </div>
         `;
 
-        await resend.emails.send({
-          // For testing kan denne brukes:
+        // Use Resend REST API directly to avoid importing the `resend` SDK
+        // during build/module-evaluation which can cause missing-key errors.
+        const resendPayload = {
           from: "Midtsæter Risnes AS <no-reply@midtsaeter-risnes.no>",
           to: [TO_EMAIL],
           subject,
           html,
+        };
+
+        const resp = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          },
+          body: JSON.stringify(resendPayload),
         });
+
+        if (!resp.ok) {
+          const text = await resp.text().catch(() => "<no body>");
+          throw new Error(`Resend API responded ${resp.status}: ${text}`);
+        }
       }
     } catch (mailErr) {
       console.error("Resend feilet:", mailErr);
