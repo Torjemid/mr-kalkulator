@@ -78,6 +78,8 @@ export async function POST(req: Request) {
 
     // 3) Send e-post (ikke la dette stoppe lagringen hvis Resend feiler)
     try {
+      console.log("DEBUG: RESEND_API_KEY exists?", !!process.env.RESEND_API_KEY);
+      console.log("DEBUG: RESEND_API_KEY length:", process.env.RESEND_API_KEY?.length ?? "undefined");
       if (!process.env.RESEND_API_KEY) {
         console.warn("RESEND_API_KEY mangler i env, hopper over e-post.");
       } else if (!TO_EMAIL || TO_EMAIL.includes("DIN_EPOST")) {
