@@ -11,7 +11,7 @@ const supabase = createClient(
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ✅ SETT DENNE:
-const TO_EMAIL = "frikk.midtsaeter@gmail.com";
+const TO_EMAIL = "torje12@gmail.com";
 
 function escapeHtml(value: any) {
   const s = String(value ?? "");
