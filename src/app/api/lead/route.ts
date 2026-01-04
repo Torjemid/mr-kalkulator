@@ -8,8 +8,8 @@ import { calculateEstimate, type EstimateInput } from "@/lib/pricing";
 // Instantiate `Resend` lazily below when actually sending mail so
 // we don't require the API key at module-evaluation / build time.
 
-// ✅ SETT DENNE:
-const TO_EMAIL = "torje12@gmail.com";
+// ✅ SETT DISSE:
+const TO_EMAILS = ["torje12@gmail.com", "frikk.midtsaeter@gmail.com"];
 
 function escapeHtml(value: any) {
   const s = String(value ?? "");
@@ -82,8 +82,8 @@ export async function POST(req: Request) {
       console.log("DEBUG: RESEND_API_KEY length:", process.env.RESEND_API_KEY?.length ?? "undefined");
       if (!process.env.RESEND_API_KEY) {
         console.warn("RESEND_API_KEY mangler i env, hopper over e-post.");
-      } else if (!TO_EMAIL || TO_EMAIL.includes("DIN_EPOST")) {
-        console.warn("TO_EMAIL er ikke satt riktig, hopper over e-post.");
+      } else if (!TO_EMAILS || TO_EMAILS.length === 0) {
+        console.warn("TO_EMAILS er ikke satt riktig, hopper over e-post.");
       } else {
         const subject = `Nytt lead (${input.jobType}) – ${customer.name ?? "Ukjent"}`;
 
@@ -145,7 +145,7 @@ export async function POST(req: Request) {
         // during build/module-evaluation which can cause missing-key errors.
         const resendPayload = {
           from: "Midtsæter Risnes AS <no-reply@midtsaeter-risnes.no>",
-          to: [TO_EMAIL],
+          to: TO_EMAILS,
           subject,
           html,
         };
