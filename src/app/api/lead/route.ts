@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { calculateEstimate, type EstimateInput } from "@/lib/pricing";
+import { Resend } from "resend";
+
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 
 const supabase = createClient(
