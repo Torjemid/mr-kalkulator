@@ -18,43 +18,40 @@ function formatNok(n: number) {
   }).format(n);
 }
 
+function applyVat(amount: number, includeVat: boolean) {
+  return includeVat ? Math.round(amount * 1.25) : amount;
+}
+
 export default function EstimatePage() {
   const [jobType, setJobType] = useState<JobType>("interior");
   const [operation, setOperation] = useState<Operation>("paint_interior");
 
-  // Areal = veggareal/fasadeflate (ikke gulvareal)
   const [areaM2, setAreaM2] = useState<number>(80);
-
-  // Ekstra felt for utvendig (valgfritt) – brukes for stillasberegning
   const [wallAreaM2, setWallAreaM2] = useState<number>(80);
 
   const [condition, setCondition] = useState<Condition>("normal");
 
-  // Listefritt (kun relevant for enkelte innvendige operasjoner)
   const [windowsCount, setWindowsCount] = useState<number>(0);
   const [doorsCount, setDoorsCount] = useState<number>(0);
 
-  // Utvendig stillas
   const [needsScaffold, setNeedsScaffold] = useState<boolean>(false);
-
-  // Materialer skal være standard PÅ
   const [includeMaterials, setIncludeMaterials] = useState<boolean>(true);
 
-  // Kontaktinfo
+  // MVA toggle
+  const [showVat, setShowVat] = useState<boolean>(true);
+
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
 
   const isExterior = jobType === "exterior";
 
-  // Listefrie vinduer/dører er kun relevant for: sparkling, sparkling + maling, helsparkling
   const showListFree =
     jobType === "interior" &&
     (operation === "spackle_only" ||
       operation === "spackle_and_paint" ||
       operation === "full_spackle");
 
-  // Hold operation i sync med jobType (enkelt MVP)
   useEffect(() => {
     if (jobType === "exterior") setOperation("paint_exterior");
     if (jobType === "interior" && operation === "paint_exterior") {
@@ -62,7 +59,6 @@ export default function EstimatePage() {
     }
   }, [jobType, operation]);
 
-  // Nullstill listefritt når det ikke er relevant
   useEffect(() => {
     if (!showListFree) {
       setWindowsCount(0);
@@ -77,20 +73,12 @@ export default function EstimatePage() {
     return {
       jobType,
       operation,
-
-      // For enkelhet: areaM2 er alltid "veggareal/fasadeflate"
       areaM2: baseArea,
-
-      // For stillas: bruk veggflate på utsiden (fallback til areaM2 hvis 0)
       wallAreaM2: isExterior ? (exteriorWallArea > 0 ? exteriorWallArea : baseArea) : undefined,
-
       condition,
-
       windowsCount: showListFree ? Math.max(0, Number(windowsCount) || 0) : 0,
       doorsCount: showListFree ? Math.max(0, Number(doorsCount) || 0) : 0,
-
       includeMaterials,
-
       needsScaffold: isExterior ? needsScaffold : false,
       scaffoldWeeks: 1,
     };
@@ -110,7 +98,6 @@ export default function EstimatePage() {
 
   const result = useMemo(() => calculateEstimate(input), [input]);
 
-  // Auto-height til Squarespace iframe når ?embed=1
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const embed = params.get("embed") === "1";
@@ -130,7 +117,7 @@ export default function EstimatePage() {
       ro.disconnect();
       window.removeEventListener("load", send);
     };
-  }, [result.totalLowNok, result.totalHighNok, showListFree, isExterior]);
+  }, [result.totalLowNok, result.totalHighNok, showListFree, isExterior, showVat]);
 
   async function submitLead() {
     if (!name.trim() || !phone.trim()) {
@@ -160,8 +147,8 @@ export default function EstimatePage() {
 
   const areaLabel = isExterior ? "Fasadeflate / veggareal (ca. m²)" : "Veggareal (ca. m²)";
   const areaHelp = isExterior
-    ? "Tips: dette er veggflate på utsiden som skal males (ikke grunnflate/gulvareal)."
-    : "Tips: dette er veggflate som skal behandles (ikke gulvareal).";
+    ? "Tips: dette er veggflate på utsiden som skal males, ikke grunnflate eller gulvareal."
+    : "Tips: dette er veggflate som skal behandles, ikke gulvareal.";
 
   return (
     <div
@@ -172,9 +159,9 @@ export default function EstimatePage() {
         fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
       }}
     >
-      <h1 style={{ fontSize: 22, marginBottom: 6 }}>Priskalkulator</h1>
+      <h1 style={{ fontSize: 22, marginBottom: 6 }}>Få ca. pris</h1>
       <p style={{ marginTop: 0, opacity: 0.8 }}>
-        Svar på noen få spørsmål, så får du et prisintervall. Bestill befaring for fastpris.
+        Svar på noen få spørsmål, så får du et prisintervall. Befaring gir fastpris.
       </p>
 
       <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
@@ -190,19 +177,18 @@ export default function EstimatePage() {
           </div>
         </label>
 
-        {/* ✅ Her er dropdown uten priser i parentes (kun navn) */}
         <label>
           <div style={{ fontWeight: 600, marginBottom: 6 }}>Type arbeid</div>
 
           {jobType === "interior" ? (
-            <select value={operation} onChange={(e) => setOperation(e.target.value as any)} style={selectStyle}>
+            <select value={operation} onChange={(e) => setOperation(e.target.value as Operation)} style={selectStyle}>
               <option value="paint_interior">Innvendig maling</option>
               <option value="spackle_only">Sparkling</option>
               <option value="spackle_and_paint">Sparkling + maling</option>
               <option value="full_spackle">Helsparkling</option>
             </select>
           ) : (
-            <select value={operation} onChange={(e) => setOperation(e.target.value as any)} style={selectStyle}>
+            <select value={operation} onChange={(e) => setOperation(e.target.value as Operation)} style={selectStyle}>
               <option value="paint_exterior">Utvendig maling</option>
             </select>
           )}
@@ -216,17 +202,22 @@ export default function EstimatePage() {
           <div style={{ fontWeight: 600, marginBottom: 6 }}>{areaLabel}</div>
           <div style={{ fontSize: 12, opacity: 0.8, marginTop: -2, marginBottom: 6 }}>{areaHelp}</div>
 
-          <input inputMode="numeric" value={areaM2} onChange={(e) => setAreaM2(Number(e.target.value))} style={inputStyle} />
+          <input
+            inputMode="numeric"
+            value={areaM2}
+            onChange={(e) => setAreaM2(Number(e.target.value))}
+            style={inputStyle}
+          />
 
           <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
             <button type="button" onClick={() => setAreaM2(80)} style={chipStyle}>
-              Liten (80 m2 veggareal)
+              Liten (80)
             </button>
             <button type="button" onClick={() => setAreaM2(140)} style={chipStyle}>
-              Medium (140 m2 veggareal)
+              Medium (140)
             </button>
             <button type="button" onClick={() => setAreaM2(220)} style={chipStyle}>
-              Stor (220 m2 veggareal)
+              Stor (220)
             </button>
           </div>
         </label>
@@ -293,16 +284,24 @@ export default function EstimatePage() {
           <span>Inkluder materialer (estimert)</span>
         </label>
 
+        <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <input type="checkbox" checked={showVat} onChange={(e) => setShowVat(e.target.checked)} />
+          <span>Vis priser inkl. mva</span>
+        </label>
+
         <div style={{ border: "1px solid rgba(0,0,0,0.12)", borderRadius: 12, padding: 14 }}>
           <div style={{ fontWeight: 700, fontSize: 16 }}>Ca. pris</div>
+
           <div style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>
-            {formatNok(result.totalLowNok)} – {formatNok(result.totalHighNok)}
+            {formatNok(applyVat(result.totalLowNok, showVat))} – {formatNok(applyVat(result.totalHighNok, showVat))}
+          </div>
+
+          <div style={{ fontSize: 13, opacity: 0.8, marginTop: 6 }}>
+            {showVat ? "Prisene vises inkl. 25% mva." : "Prisene vises eks. 25% mva."}
           </div>
 
           <div style={{ marginTop: 10 }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Beregning</div>
-
-            {/* ✅ HER er endringen du ønsket: kun antall, ingen pris */}
             <ul style={{ margin: 0, paddingLeft: 18 }}>
               {result.items.map((it: LineItem) => (
                 <li key={it.code + it.name}>
@@ -399,4 +398,3 @@ const primaryCta: React.CSSProperties = {
   color: "white",
   fontWeight: 800,
 };
-
