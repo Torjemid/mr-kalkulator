@@ -10,11 +10,11 @@ export type PriceItem = {
 };
 
 export const PRICE_ITEMS: Record<string, PriceItem> = {
-  "work.sparking_og_maling": { code: "work.sparking_og_maling", name: "Sparkling + maling", category: "work", unit: "m2", unitPriceNok: 290, tags: ["interior"] },
+  "work.sparking_og_maling": { code: "work.sparking_og_maling", name: "Sparkling + maling", category: "work", unit: "m2", unitPriceNok: 320, tags: ["interior"] },
   "work.sparking":           { code: "work.sparking",           name: "Sparkling",         category: "work", unit: "m2", unitPriceNok: 240, tags: ["interior"] },
-  "work.helsparkling":       { code: "work.helsparkling",       name: "Helsparkling",      category: "work", unit: "m2", unitPriceNok: 548, tags: ["interior"] },
-  "work.innvendig_maling":   { code: "work.innvendig_maling",   name: "Innvendig maling",  category: "work", unit: "m2", unitPriceNok: 150, tags: ["interior"] },
-  "work.utvendig_maling":    { code: "work.utvendig_maling",    name: "Utvendig maling",   category: "work", unit: "m2", unitPriceNok: 350, tags: ["exterior"] },
+  "work.helsparkling":       { code: "work.helsparkling",       name: "Helsparkling",      category: "work", unit: "m2", unitPriceNok: 450, tags: ["interior"] },
+  "work.innvendig_maling":   { code: "work.innvendig_maling",   name: "Innvendig maling",  category: "work", unit: "m2", unitPriceNok: 180, tags: ["interior"] },
+  "work.utvendig_maling":    { code: "work.utvendig_maling",    name: "Utvendig maling",   category: "work", unit: "m2", unitPriceNok: 300, tags: ["exterior"] },
 
   "work.vindu_listefritt":   { code: "work.vindu_listefritt",   name: "Vindu listefritt",  category: "work", unit: "stk", unitPriceNok: 800 },
   "work.dor_listefritt":     { code: "work.dor_listefritt",     name: "Dør listefritt",    category: "work", unit: "stk", unitPriceNok: 550 },
