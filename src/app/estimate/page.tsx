@@ -44,6 +44,10 @@ export default function EstimatePage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
   const isExterior = jobType === "exterior";
 
   const showListFree =
@@ -117,32 +121,46 @@ export default function EstimatePage() {
       ro.disconnect();
       window.removeEventListener("load", send);
     };
-  }, [result.totalLowNok, result.totalHighNok, showListFree, isExterior, showVat]);
+  }, [result.totalLowNok, result.totalHighNok, showListFree, isExterior, showVat, successMessage, errorMessage]);
 
   async function submitLead() {
+    setSuccessMessage("");
+    setErrorMessage("");
+
     if (!name.trim() || !phone.trim()) {
-      alert("Fyll inn navn og mobilnummer, så kan vi kontakte deg.");
+      setErrorMessage("Fyll inn navn og mobilnummer, så kan vi kontakte deg.");
       return;
     }
 
-    const payload = {
-      input,
-      customer: { name, phone, email },
-    };
+    try {
+      setIsSubmitting(true);
 
-    const r = await fetch("/api/lead", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+      const payload = {
+        input,
+        customer: { name, phone, email },
+      };
 
-    if (!r.ok) {
-      const msg = await r.text().catch(() => "");
-      alert("Kunne ikke sende forespørsel. Prøv igjen.\n" + msg);
-      return;
+      const r = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!r.ok) {
+        const msg = await r.text().catch(() => "");
+        setErrorMessage(`Kunne ikke sende forespørsel. Prøv igjen.${msg ? ` ${msg}` : ""}`);
+        return;
+      }
+
+      setSuccessMessage("Takk! Forespørselen er sendt inn, og vi tar kontakt snart.");
+      setName("");
+      setPhone("");
+      setEmail("");
+    } catch {
+      setErrorMessage("Kunne ikke sende forespørsel. Prøv igjen.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    alert("Forespørsel sendt! Vi tar kontakt snart.");
   }
 
   const areaLabel = isExterior ? "Fasadeflate / veggareal (ca. m²)" : "Veggareal (ca. m²)";
@@ -346,9 +364,52 @@ export default function EstimatePage() {
             />
           </label>
 
-          <button type="button" onClick={submitLead} style={{ ...primaryCta, width: "100%", marginTop: 12 }}>
-            Send forespørsel
+          <button
+            type="button"
+            onClick={submitLead}
+            disabled={isSubmitting}
+            style={{
+              ...primaryCta,
+              width: "100%",
+              marginTop: 12,
+              opacity: isSubmitting ? 0.7 : 1,
+              cursor: isSubmitting ? "not-allowed" : "pointer",
+            }}
+          >
+            {isSubmitting ? "Sender..." : "Send forespørsel"}
           </button>
+
+          {successMessage && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: "10px 12px",
+                borderRadius: 10,
+                background: "#ecfdf3",
+                color: "#067647",
+                fontSize: 14,
+                fontWeight: 600,
+              }}
+            >
+              {successMessage}
+            </div>
+          )}
+
+          {errorMessage && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: "10px 12px",
+                borderRadius: 10,
+                background: "#fef3f2",
+                color: "#b42318",
+                fontSize: 14,
+                fontWeight: 600,
+              }}
+            >
+              {errorMessage}
+            </div>
+          )}
 
           <div style={{ fontSize: 12, opacity: 0.75, marginTop: 10 }}>
             Ved innsending samtykker du til at vi kan kontakte deg om forespørselen.
