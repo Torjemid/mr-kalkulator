@@ -14,12 +14,12 @@ export const PRICE_ITEMS: Record<string, PriceItem> = {
   "work.sparking":           { code: "work.sparking",           name: "Sparkling",         category: "work", unit: "m2", unitPriceNok: 240, tags: ["interior"] },
   "work.helsparkling":       { code: "work.helsparkling",       name: "Helsparkling",      category: "work", unit: "m2", unitPriceNok: 450, tags: ["interior"] },
   "work.innvendig_maling":   { code: "work.innvendig_maling",   name: "Innvendig maling",  category: "work", unit: "m2", unitPriceNok: 180, tags: ["interior"] },
-  "work.utvendig_maling":    { code: "work.utvendig_maling",    name: "Utvendig maling",   category: "work", unit: "m2", unitPriceNok: 300, tags: ["exterior"] },
+  "work.utvendig_maling":    { code: "work.utvendig_maling",    name: "Utvendig maling",   category: "work", unit: "m2", unitPriceNok: 290, tags: ["exterior"] },
 
   "work.vindu_listefritt":   { code: "work.vindu_listefritt",   name: "Vindu listefritt",  category: "work", unit: "stk", unitPriceNok: 800 },
   "work.dor_listefritt":     { code: "work.dor_listefritt",     name: "Dør listefritt",    category: "work", unit: "stk", unitPriceNok: 550 },
 
-  "rental.stillas_m2_week":  { code: "rental.stillas_m2_week",  name: "Stillas leie (85 kr per m² vegg per uke)", category: "rental", unit: "m2", unitPriceNok: 85, tags: ["exterior"] },
+  "rental.stillas_m2_week":  { code: "rental.stillas_m2_week",  name: "Stillas leie (100 kr per m² vegg per uke)", category: "rental", unit: "m2", unitPriceNok: 100, tags: ["exterior"] },
 
   "addon.helsparkling":      { code: "addon.helsparkling",      name: "Tilvalg helsparkling", category: "addon", unit: "m2", unitPriceNok: 80 },
 };
